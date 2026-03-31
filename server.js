@@ -128,6 +128,10 @@ app.post('/execute/java/start', async (req, res) => {
         // Get initial output
         let initialOutput = outputBuffer;
 
+        // Determine if program is waiting for input
+        // If output doesn't end with newline, it's likely waiting for input
+        const requiresInput = !isFinished && !initialOutput.endsWith('\n') && !initialOutput.endsWith('\r');
+
         // Check if process already finished (for non-interactive programs)
         if (javaProcess.exitCode !== null && !javaProcess.pid) {
             isFinished = true;
@@ -152,7 +156,7 @@ app.post('/execute/java/start', async (req, res) => {
             processId,
             output: initialOutput || '',
             isFinished: false,
-            requiresInput: !isFinished
+            requiresInput
         });
 
     } catch (error) {
@@ -193,24 +197,39 @@ app.post('/execute/java/input', async (req, res) => {
     }
 
     try {
+        // Save output BEFORE writing input (this is where the prompt is)
+        const outputBeforeInput = processInfo.outputBuffer;
+
         // Write input to stdin
         processInfo.process.stdin.write(input + '\n');
+
+        // Debug: Log what we sent
+        console.log('Input sent:', input);
 
         // Wait longer for output to fully accumulate
         await new Promise(resolve => setTimeout(resolve, 300));
 
-        // Format output: add newlines between prompts and user inputs for readability
-        let formattedOutput = processInfo.outputBuffer;
+        // Get the full output after input was processed
+        const fullOutput = processInfo.outputBuffer;
 
-        // If output doesn't end with newline, it's waiting for more input
-        if (!formattedOutput.endsWith('\n') && !formattedOutput.endsWith('\r')) {
-            formattedOutput += '\n';
+        // Build formatted output: old output + user input + new output that came after input
+        let formattedOutput = '';
+
+        if (input && input.trim()) {
+            // Get the new output that was produced after we sent input
+            const newOutput = fullOutput.slice(outputBeforeInput.length);
+            // Combine: old output + user input + new output
+            formattedOutput = outputBeforeInput + input + '\n' + newOutput;
+        } else {
+            formattedOutput = outputBeforeInput;
         }
 
         // Return formatted output
         const output = formattedOutput;
 
         // Check if process is still running
+        let requiresInput = false;
+
         if (processInfo.process.exitCode !== null) {
             processInfo.isFinished = true;
 
@@ -223,13 +242,18 @@ app.post('/execute/java/input', async (req, res) => {
             }
 
             activeProcesses.delete(processId);
+        } else {
+            // Process is still running - check if it's waiting for more input
+            // Check if the FULL output ends with a newline - if not, it's likely waiting for input
+            const trimmedOutput = fullOutput.trimEnd();
+            requiresInput = !trimmedOutput.endsWith('\n') && !trimmedOutput.endsWith('\r');
         }
 
         res.json({
             success: true,
             output,
             isFinished: processInfo.isFinished,
-            requiresInput: !processInfo.isFinished
+            requiresInput
         });
 
     } catch (error) {
