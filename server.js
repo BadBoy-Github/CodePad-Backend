@@ -10,6 +10,7 @@ const HOST = '0.0.0.0';
 
 // Ensure Java binaries are in PATH
 process.env.PATH = '/usr/lib/jvm/java-11-openjdk/bin:' + process.env.PATH;
+console.log('PATH:', process.env.PATH);
 
 // Store active processes
 const activeProcesses = new Map();
@@ -85,7 +86,9 @@ app.post('/execute/java/start', async (req, res) => {
                 resolve(true);
             });
         });
+        console.log('Compilation successful for', filePath);
 
+        console.log('Spawning java with -cp', outDir, className);
         // Start the Java process with interactive stdin
         javaProcess = spawn('java', ['-cp', outDir, className], {
             stdio: ['pipe', 'pipe', 'pipe']
