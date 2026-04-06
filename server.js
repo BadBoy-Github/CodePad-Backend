@@ -147,7 +147,7 @@ app.post('/execute/java/start', async (req, res) => {
         });
 
         // Give it a moment to start and get initial output
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Get initial output
         let initialOutput = outputBuffer;
