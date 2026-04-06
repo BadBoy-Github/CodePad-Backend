@@ -120,6 +120,16 @@ app.post('/execute/java/start', async (req, res) => {
             }
         });
 
+        // Handle process error
+        javaProcess.on('error', (err) => {
+            outputBuffer += `Error: ${err.message}`;
+            isFinished = true;
+            const processInfo = activeProcesses.get(processId);
+            if (processInfo) {
+                processInfo.isFinished = true;
+            }
+        });
+
         // Handle process completion
         javaProcess.on('close', (code) => {
             isFinished = true;
