@@ -4,6 +4,9 @@ FROM node:18-alpine
 # Install OpenJDK 11 (or latest LTS)
 RUN apk add --no-cache openjdk11
 
+# Add Java to PATH
+ENV PATH="/usr/lib/jvm/java-11-openjdk/bin:$PATH"
+
 # Set working directory
 WORKDIR /app
 
