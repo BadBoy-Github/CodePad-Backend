@@ -8,6 +8,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
 
+// Ensure Java binaries are in PATH
+process.env.PATH = '/usr/lib/jvm/java-11-openjdk/bin:' + process.env.PATH;
+
 // Store active processes
 const activeProcesses = new Map();
 
@@ -84,7 +87,7 @@ app.post('/execute/java/start', async (req, res) => {
         });
 
         // Start the Java process with interactive stdin
-        javaProcess = spawn('/usr/lib/jvm/java-11-openjdk/bin/java', ['-cp', outDir, className], {
+        javaProcess = spawn('java', ['-cp', outDir, className], {
             stdio: ['pipe', 'pipe', 'pipe']
         });
 
@@ -288,9 +291,7 @@ app.get('/execute/java/output/:processId', async (req, res) => {
 // Helper function for sync exec (needed for compilation)
 function execSync(command, callback) {
     const { exec } = require('child_process');
-    // Use full path to javac
-    const fullCommand = command.replace(/^javac/, '/usr/lib/jvm/java-11-openjdk/bin/javac');
-    exec(fullCommand, { timeout: 10000 }, callback);
+    exec(command, { timeout: 10000 }, callback);
 }
 
 // Health check
