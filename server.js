@@ -90,7 +90,7 @@ app.post('/execute/java/start', async (req, res) => {
 
         console.log('Spawning java with -cp', outDir, className);
         // Start the Java process with interactive stdin
-        javaProcess = spawn('java', ['-cp', outDir, className], {
+        javaProcess = spawn('/usr/lib/jvm/java-11-openjdk/bin/java', ['-cp', outDir, className], {
             stdio: ['pipe', 'pipe', 'pipe']
         });
 
