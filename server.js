@@ -106,6 +106,7 @@ app.post('/execute/java/start', async (req, res) => {
         // Capture stdout
         javaProcess.stdout.on('data', (data) => {
             const text = data.toString();
+            console.log('stdout data:', JSON.stringify(text));
             outputBuffer += text;
             const processInfo = activeProcesses.get(processId);
             if (processInfo) {
@@ -116,6 +117,7 @@ app.post('/execute/java/start', async (req, res) => {
         // Capture stderr
         javaProcess.stderr.on('data', (data) => {
             const text = data.toString();
+            console.log('stderr data:', JSON.stringify(text));
             outputBuffer += `Error: ${text}`;
             const processInfo = activeProcesses.get(processId);
             if (processInfo) {
@@ -125,6 +127,7 @@ app.post('/execute/java/start', async (req, res) => {
 
         // Handle process error
         javaProcess.on('error', (err) => {
+            console.log('spawn error:', err.message);
             outputBuffer += `Error: ${err.message}`;
             isFinished = true;
             const processInfo = activeProcesses.get(processId);
@@ -135,6 +138,7 @@ app.post('/execute/java/start', async (req, res) => {
 
         // Handle process completion
         javaProcess.on('close', (code) => {
+            console.log('process closed with code:', code);
             isFinished = true;
             const processInfo = activeProcesses.get(processId);
             if (processInfo) {
