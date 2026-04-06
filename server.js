@@ -145,6 +145,9 @@ app.post('/execute/java/start', async (req, res) => {
         // Get initial output
         let initialOutput = outputBuffer;
 
+        console.log('Initial output:', JSON.stringify(initialOutput));
+        console.log('isFinished:', isFinished);
+
         // Determine if program is waiting for input
         // If output doesn't end with newline, it's likely waiting for input
         const requiresInput = !isFinished && !initialOutput.endsWith('\n') && !initialOutput.endsWith('\r');
