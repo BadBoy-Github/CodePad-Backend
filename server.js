@@ -84,7 +84,7 @@ app.post('/execute/java/start', async (req, res) => {
         });
 
         // Start the Java process with interactive stdin
-        javaProcess = spawn('java', ['-cp', outDir, className], {
+        javaProcess = spawn('/usr/lib/jvm/java-11-openjdk/bin/java', ['-cp', outDir, className], {
             stdio: ['pipe', 'pipe', 'pipe']
         });
 
@@ -288,7 +288,9 @@ app.get('/execute/java/output/:processId', async (req, res) => {
 // Helper function for sync exec (needed for compilation)
 function execSync(command, callback) {
     const { exec } = require('child_process');
-    exec(command, { timeout: 10000 }, callback);
+    // Use full path to javac
+    const fullCommand = command.replace(/^javac/, '/usr/lib/jvm/java-11-openjdk/bin/javac');
+    exec(fullCommand, { timeout: 10000 }, callback);
 }
 
 // Health check
