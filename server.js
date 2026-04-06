@@ -6,6 +6,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const HOST = process.env.HOST || 'localhost';
 
 // Store active processes
 const activeProcesses = new Map();
@@ -13,7 +14,10 @@ const activeProcesses = new Map();
 let processCounter = 0;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // Ensure temp directory exists
@@ -292,10 +296,10 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-    console.log(`CodePad Backend Server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+    console.log(`CodePad Backend Server running on http://${HOST}:${PORT}`);
     console.log(`Java execution endpoints:`);
-    console.log(`  POST http://localhost:${PORT}/execute/java/start - Start execution`);
-    console.log(`  POST http://localhost:${PORT}/execute/java/input - Send input`);
-    console.log(`  GET http://localhost:${PORT}/execute/java/output/:processId - Get output`);
+    console.log(`  POST http://${HOST}:${PORT}/execute/java/start - Start execution`);
+    console.log(`  POST http://${HOST}:${PORT}/execute/java/input - Send input`);
+    console.log(`  GET http://${HOST}:${PORT}/execute/java/output/:processId - Get output`);
 });
